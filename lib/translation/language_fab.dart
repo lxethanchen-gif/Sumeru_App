@@ -73,7 +73,7 @@ class _LanguagePickerSheet extends StatelessWidget {
             child: ListView.separated(
               shrinkWrap: true,
               itemCount: supportedLanguages.length,
-              separatorBuilder: (_, __) =>
+              separatorBuilder: (_, _) =>
                   const Divider(height: 1, indent: 16),
               itemBuilder: (_, i) {
                 final lang = supportedLanguages[i];

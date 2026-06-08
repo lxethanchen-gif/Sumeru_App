@@ -12,83 +12,26 @@ class FirstPage extends StatefulWidget {
 }
 
 class FirstPageState extends State<FirstPage> {
-  final TextEditingController _searchController = TextEditingController();
-  List<Teaching> _filteredData = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _performSearch('');
-  }
-
-  void _performSearch(String query) {
-    final keyword = query.trim().toLowerCase();
-    final filtered = teachingsList.where((item) {
-      return item.title.toLowerCase().contains(keyword) ||
-          item.subtitle.toLowerCase().contains(keyword) ||
-          item.tag.toLowerCase().contains(keyword) ||
-          item.subTag.toLowerCase().contains(keyword) ||
-          item.content.toLowerCase().contains(keyword);
-    }).toList();
-    setState(() => _filteredData = filtered);
-  }
+  final List<Teaching> _data = teachingsList;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 搜尋欄位
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFD4A017).withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: _searchController,
-            onChanged: _performSearch,
-            decoration: InputDecoration(
-              hintText: '搜尋開示關鍵字...',
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 15),
-              prefixIcon: const Icon(Icons.search, color: Color(0xFFD4A017)),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(
-                  vertical: 0, horizontal: 20),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(40),
-                borderSide:
-                    const BorderSide(color: Color(0xFFEFEBE9), width: 1),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(40),
-                borderSide:
-                    const BorderSide(color: Color(0xFFD4A017), width: 1.5),
-              ),
+    return ColoredBox(
+      color: const Color(0xFFF5F5F5),
+      child: _data.isEmpty
+          ? const Center(child: Text('目前無內容'))
+          : ListView.builder(
+              itemCount: _data.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  child: _TeachingCard(item: _data[index]),
+                );
+              },
             ),
-          ),
-        ),
-
-        Expanded(
-          child: _filteredData.isEmpty
-              ? const Center(child: Text('查無相關內容'))
-              : ListView.builder(
-                  itemCount: _filteredData.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      child: _TeachingCard(item: _filteredData[index]),
-                    );
-                  },
-                ),
-        ),
-      ],
     );
   }
 }
@@ -120,7 +63,6 @@ class _TeachingCardState extends State<_TeachingCard> {
     final langCode = TranslationProvider.of(context).langCode;
     if (_cachedLang == langCode) return;
 
-    // If the language is traditional Chinese (original), reset immediately
     if (langCode == 'zh-TW') {
       setState(() {
         _cachedLang = langCode;
@@ -155,21 +97,18 @@ class _TeachingCardState extends State<_TeachingCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to language changes
     TranslationProvider.of(context);
 
     return Card(
       elevation: 2,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  TeachingDetailPage(teaching: widget.item),
+              builder: (context) => TeachingDetailPage(teaching: widget.item),
             ),
           );
         },
@@ -180,9 +119,10 @@ class _TeachingCardState extends State<_TeachingCard> {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_subtitle,
-                        style: const TextStyle(
-                            fontSize: 13, color: Colors.grey)),
+                    Text(
+                      _subtitle,
+                      style: const TextStyle(fontSize: 13, color: Colors.grey),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       _title,
@@ -202,7 +142,9 @@ class _TeachingCardState extends State<_TeachingCard> {
                         Text(
                           widget.item.date,
                           style: const TextStyle(
-                              fontSize: 12, color: Colors.grey),
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -221,11 +163,13 @@ class _TeachingCardState extends State<_TeachingCard> {
         const SizedBox(height: 8),
         _SkeletonBox(width: double.infinity, height: 18),
         const SizedBox(height: 10),
-        Row(children: [
-          _SkeletonBox(width: 60, height: 22),
-          const SizedBox(width: 6),
-          _SkeletonBox(width: 60, height: 22),
-        ]),
+        Row(
+          children: [
+            _SkeletonBox(width: 60, height: 22),
+            const SizedBox(width: 6),
+            _SkeletonBox(width: 60, height: 22),
+          ],
+        ),
       ],
     );
   }
