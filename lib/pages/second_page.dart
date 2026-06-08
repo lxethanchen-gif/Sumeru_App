@@ -36,7 +36,7 @@ class _SecondPageState extends State<SecondPage> {
   // 用來記錄每張卡片的 Key，方便目錄跳轉定位
   final List<GlobalKey> _cardKeys = [];
   // 【新增】用來控制每張卡片展開/折疊的控制器清單
-  final List<ExpansionTileController> _tileControllers = [];
+  final List<ExpansibleController> _tileControllers = [];
 
   @override
   void initState() {
@@ -45,7 +45,7 @@ class _SecondPageState extends State<SecondPage> {
     // 根據詩詞數量初始化 GlobalKey 與 ExpansionTileController
     for (var i = 0; i < _allPoems.length; i++) {
       _cardKeys.add(GlobalKey());
-      _tileControllers.add(ExpansionTileController()); // 建立對應的控制器
+      _tileControllers.add(ExpansibleController()); // 建立對應的控制器
     }
   }
 
@@ -171,7 +171,7 @@ class _SecondPageState extends State<SecondPage> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -241,7 +241,7 @@ class PoemCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String content;
-  final ExpansionTileController? tileController; // 【新增】接收控制器的參數
+  final ExpansibleController? tileController; // 【新增】接收控制器的參數
 
   const PoemCard({
     super.key,

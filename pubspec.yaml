@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   template_package: ^2.1.2
   youtube_player_flutter: ^10.0.1
+  audioplayers: ^6.7.1
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +59,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/audio/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

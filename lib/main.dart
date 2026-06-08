@@ -72,7 +72,7 @@ class _MainPageState extends State<MainPage> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08), // 超輕薄的陰影
+              color: Colors.black.withValues(alpha: 0.08), // 超輕薄的陰影
               blurRadius: 15,
               spreadRadius: 1,
               offset: const Offset(0, -2), // 讓陰影往上飄起，增加浮空卡片感

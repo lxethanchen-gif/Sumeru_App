@@ -74,7 +74,7 @@ class _FourthPageState extends State<FourthPage> {
   Widget build(BuildContext context) {
     // 尊榮橘金色
     const Color primaryGold = Color.fromARGB(255, 246, 181, 3);
-    final Color panelBackground = const Color(0xff1e1e1e).withOpacity(0.75);
+    final Color panelBackground = const Color(0xff1e1e1e).withValues(alpha: 0.75);
 
     return Scaffold(
       backgroundColor: const Color(0xff0d0d0d), 
@@ -92,7 +92,7 @@ class _FourthPageState extends State<FourthPage> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 4),
                   )
@@ -120,7 +120,7 @@ class _FourthPageState extends State<FourthPage> {
                     color: panelBackground,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: primaryGold.withOpacity(0.12), 
+                      color: primaryGold.withValues(alpha: 0.12), 
                       width: 1,
                     ),
                   ),
@@ -144,7 +144,7 @@ class _FourthPageState extends State<FourthPage> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: primaryGold.withOpacity(0.2),
+                                      color: primaryGold.withValues(alpha: 0.2),
                                       blurRadius: 6,
                                       spreadRadius: 1,
                                     )
@@ -171,7 +171,7 @@ class _FourthPageState extends State<FourthPage> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: primaryGold.withOpacity(0.3),
+                                      color: primaryGold.withValues(alpha: 0.3),
                                       blurRadius: 8,
                                       spreadRadius: 1,
                                     )
@@ -198,7 +198,7 @@ class _FourthPageState extends State<FourthPage> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: primaryGold.withOpacity(0.2),
+                                      color: primaryGold.withValues(alpha: 0.2),
                                       blurRadius: 6,
                                       spreadRadius: 1,
                                     )
@@ -223,12 +223,12 @@ class _FourthPageState extends State<FourthPage> {
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: primaryGold,
-                            inactiveTrackColor: Colors.white.withOpacity(0.1),
+                            inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
                             thumbColor: Colors.white, 
                             thumbShape: const RoundSliderThumbShape(
                               enabledThumbRadius: 5.0, 
                             ),
-                            overlayColor: primaryGold.withOpacity(0.15),
+                            overlayColor: primaryGold.withValues(alpha: 0.15),
                             overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
                             trackHeight: 2.5, 
                             trackShape: const RectangularSliderTrackShape(), 

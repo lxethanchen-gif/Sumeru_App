@@ -3,85 +3,78 @@ import 'package:suneru1/pages/data/teachings_data.dart';
 import 'package:suneru1/pages/detail/teaching_detail_page.dart';
 
 class FirstPage extends StatefulWidget {
-  // ← 改成 StatefulWidget，搜尋需要 setState
   const FirstPage({super.key});
 
   @override
-  State<FirstPage> createState() => _FirstPageState();
+  State<FirstPage> createState() => FirstPageState();
 }
 
-class _FirstPageState extends State<FirstPage> {
+class FirstPageState extends State<FirstPage> {
   final TextEditingController _searchController = TextEditingController();
-  List<Teaching> _filteredList = teachingsList; // 預設顯示全部
-
-  // 搜尋邏輯：比對標題、副標題、標籤、內文
-  void _onSearchChanged(String keyword) {
-    final query = keyword.trim();
-    setState(() {
-      if (query.isEmpty) {
-        _filteredList = teachingsList;
-      } else {
-        _filteredList = teachingsList.where((item) {
-          return item.title.contains(query) ||
-              item.subtitle.contains(query) ||
-              item.tag.contains(query) ||
-              item.subTag.contains(query) ||
-              item.content.contains(query);
-        }).toList();
-      }
-    });
-  }
+  List<Teaching> _filteredData = [];
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _performSearch('');
+  }
+
+  void _performSearch(String query) {
+    final keyword = query.trim().toLowerCase();
+
+    final filtered = teachingsList.where((item) {
+      return item.title.toLowerCase().contains(keyword) ||
+          item.subtitle.toLowerCase().contains(keyword) ||
+          item.tag.toLowerCase().contains(keyword) ||
+          item.subTag.toLowerCase().contains(keyword) ||
+          item.content.toLowerCase().contains(keyword);
+    }).toList();
+
+    setState(() {
+      _filteredData = filtered;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ── 搜尋欄 ──────────────────────────────────
+        // 搜尋欄位
         Container(
-          color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFD4A017).withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: TextField(
             controller: _searchController,
-            onChanged: _onSearchChanged,
-            keyboardType: TextInputType.text, // ← 確保是文字鍵盤
-            textInputAction: TextInputAction.search,
-            enableSuggestions: true, // ← 開啟輸入建議
-            autocorrect: false,
+            onChanged: _performSearch,
             decoration: InputDecoration(
               hintText: '搜尋開示關鍵字...',
-              prefixIcon: const Icon(
-                Icons.search,
-                color: Color.fromARGB(255, 246, 181, 3),
-              ),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.grey),
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('');
-                      },
-                    )
-                  : null,
+              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 15),
+              prefixIcon: const Icon(Icons.search, color: Color(0xFFD4A017)),
               filled: true,
-              fillColor: const Color.fromARGB(255, 253, 248, 235),
+              fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 0,
-                horizontal: 16,
+                horizontal: 20,
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(40),
+                borderSide: const BorderSide(
+                  color: Color(0xFFEFEBE9),
+                  width: 1,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(40),
                 borderSide: const BorderSide(
-                  color: Color.fromARGB(255, 246, 181, 3),
+                  color: Color(0xFFD4A017),
                   width: 1.5,
                 ),
               ),
@@ -89,47 +82,19 @@ class _FirstPageState extends State<FirstPage> {
           ),
         ),
 
-        // ── 搜尋結果數量提示 ────────────────────────
-        if (_searchController.text.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: [
-                Text(
-                  '共找到 ${_filteredList.length} 則開示',
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-
-        // ── 列表 ────────────────────────────────────
         Expanded(
-          child: _filteredList.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.search_off, size: 60, color: Colors.grey),
-                      SizedBox(height: 12),
-                      Text(
-                        '找不到相關開示',
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  itemCount: _filteredList.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 8),
+          child: _filteredData.isEmpty
+              ? const Center(child: Text('查無相關內容'))
+              : ListView.builder(
+                  itemCount: _filteredData.length,
                   itemBuilder: (context, index) {
-                    final item = _filteredList[index];
-                    return _TeachingCard(item: item);
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: _TeachingCard(item: _filteredData[index]),
+                    );
                   },
                 ),
         ),
@@ -138,7 +103,7 @@ class _FirstPageState extends State<FirstPage> {
   }
 }
 
-// ── 開示卡片元件 ──────────────────────────────────────────
+// ── 卡片元件 ──────────────────────────────────────────────
 class _TeachingCard extends StatelessWidget {
   final Teaching item;
   const _TeachingCard({required this.item});
@@ -163,14 +128,11 @@ class _TeachingCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 副標題
               Text(
                 item.subtitle,
                 style: const TextStyle(fontSize: 13, color: Colors.grey),
               ),
               const SizedBox(height: 4),
-
-              // 主標題
               Text(
                 item.title,
                 style: const TextStyle(
@@ -180,8 +142,6 @@ class _TeachingCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-
-              // 標籤 + 日期
               Row(
                 children: [
                   _TagChip(label: item.tag),
@@ -214,7 +174,6 @@ class _TagChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 246, 181, 3),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color.fromARGB(255, 246, 181, 3)),
       ),
       child: Text(
         label,
