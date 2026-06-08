@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:suneru1/pages/data/teachings_data.dart';
 import 'package:suneru1/translation/translation_provider.dart';
 import 'package:suneru1/translation/translation_service.dart';
@@ -55,16 +56,11 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
     setState(() => _isTranslating = true);
 
     final results = await Future.wait([
-      TranslationService.translate(
-          text: widget.teaching.title, to: langCode),
-      TranslationService.translate(
-          text: widget.teaching.subtitle, to: langCode),
-      TranslationService.translate(
-          text: widget.teaching.tag, to: langCode),
-      TranslationService.translate(
-          text: widget.teaching.subTag, to: langCode),
-      TranslationService.translate(
-          text: widget.teaching.content, to: langCode),
+      TranslationService.translate(text: widget.teaching.title, to: langCode),
+      TranslationService.translate(text: widget.teaching.subtitle, to: langCode),
+      TranslationService.translate(text: widget.teaching.tag, to: langCode),
+      TranslationService.translate(text: widget.teaching.subTag, to: langCode),
+      TranslationService.translate(text: widget.teaching.content, to: langCode),
     ]);
 
     if (mounted) {
@@ -80,9 +76,39 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
     }
   }
 
+  void _copyAll() {
+    final text = [
+      _subtitle,
+      _title,
+      '$_tag・$_subTag',
+      widget.teaching.date,
+      '',
+      _content,
+    ].join('\n');
+
+    Clipboard.setData(ClipboardData(text: text));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
+            SizedBox(width: 8),
+            Text('已複製開示全文'),
+          ],
+        ),
+        backgroundColor: const Color(0xFFD4A017),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Listen to language changes
     TranslationProvider.of(context);
 
     return Scaffold(
@@ -105,6 +131,12 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
                 ),
               ),
             ),
+          if (!_isTranslating)
+            IconButton(
+              icon: const Icon(Icons.copy_rounded),
+              tooltip: '複製全文',
+              onPressed: _copyAll,
+            ),
         ],
       ),
       body: _isTranslating
@@ -114,14 +146,11 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Subtitle
                   Text(
                     _subtitle,
-                    style: const TextStyle(
-                        fontSize: 14, color: Colors.grey),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
-                  // Title
                   Text(
                     _title,
                     style: const TextStyle(
@@ -131,7 +160,6 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Tags + Date
                   Row(
                     children: [
                       _TagChip(label: _tag),
@@ -140,15 +168,13 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
                       const Spacer(),
                       Text(
                         widget.teaching.date,
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   const Divider(),
                   const SizedBox(height: 16),
-                  // Content
                   Text(
                     _content,
                     style: const TextStyle(
@@ -183,10 +209,9 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
           const SizedBox(height: 16),
           for (int i = 0; i < 8; i++) ...[
             _SkeletonBox(
-                width: i % 3 == 0
-                    ? double.infinity
-                    : (i % 3 == 1 ? 260 : 200),
-                height: 14),
+              width: i % 3 == 0 ? double.infinity : (i % 3 == 1 ? 260 : 200),
+              height: 14,
+            ),
             const SizedBox(height: 10),
           ],
         ],
