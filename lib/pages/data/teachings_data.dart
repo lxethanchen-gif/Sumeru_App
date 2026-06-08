@@ -5,7 +5,6 @@ class Teaching {
   final String subTag;
   final String date;
   final String content;
-  final String audioFileName; // 必須要有的欄位
 
   const Teaching({
     required this.title,
@@ -14,7 +13,6 @@ class Teaching {
     required this.subTag,
     required this.date,
     required this.content,
-    required this.audioFileName, // 這裡必須補上
   });
 }
 
@@ -31,7 +29,6 @@ const List<Teaching> teachingsList = [
                 是故善知識，應做當供，切勿做不當供，切勿受不當供！,
                 善知識，若欲供吾諦深、供妙湛寺建設，當如是知曉並做當供！,
                 諦深2018年4月2日應弟子問!''',
-    audioFileName: 'lesson1.mp3',
   ),
   Teaching(
     title: '修行的真正意義',
@@ -45,7 +42,6 @@ const List<Teaching> teachingsList = [
                 是故善知識，應做當供，切勿做不當供，切勿受不當供！,
                 善知識，若欲供吾諦深、供妙湛寺建設，當如是知曉並做當供！,
                 諦深2018年4月2日應弟子問!''',
-    audioFileName: 'lesson2.mp3',
   ),
   Teaching(
     title: '修行不是條條大路通羅馬',
@@ -60,7 +56,6 @@ const List<Teaching> teachingsList = [
                 是故善知識，應做當供，切勿做不當供，切勿受不當供！,
                 善知識，若欲供吾諦深、供妙湛寺建設，當如是知曉並做當供！,
                 諦深2018年4月2日應弟子問!''',
-    audioFileName: 'lesson1.mp3',
   ),
   Teaching(
     title: '修行的真正意義',
@@ -74,7 +69,6 @@ const List<Teaching> teachingsList = [
                 是故善知識，應做當供，切勿做不當供，切勿受不當供！,
                 善知識，若欲供吾諦深、供妙湛寺建設，當如是知曉並做當供！,
                 諦深2018年4月2日應弟子問!''',
-    audioFileName: 'lesson2.mp3',
   ),
   Teaching(
     title: '修行不是條條大路通羅馬',
@@ -89,7 +83,6 @@ const List<Teaching> teachingsList = [
                 是故善知識，應做當供，切勿做不當供，切勿受不當供！,
                 善知識，若欲供吾諦深、供妙湛寺建設，當如是知曉並做當供！,
                 諦深2018年4月2日應弟子問!''',
-    audioFileName: 'lesson1.mp3',
   ),
   Teaching(
     title: '修行的真正意義',
@@ -103,6 +96,5 @@ const List<Teaching> teachingsList = [
                 是故善知識，應做當供，切勿做不當供，切勿受不當供！,
                 善知識，若欲供吾諦深、供妙湛寺建設，當如是知曉並做當供！,
                 諦深2018年4月2日應弟子問!''',
-    audioFileName: 'lesson2.mp3',
   ),
 ];
