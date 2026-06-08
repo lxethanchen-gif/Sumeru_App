@@ -6,51 +6,39 @@ import 'package:suneru1/translation/translation_service.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
-
   @override
   State<FirstPage> createState() => FirstPageState();
 }
 
 class FirstPageState extends State<FirstPage> {
-  final List<Teaching> _data = teachingsList;
-
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
       color: const Color(0xFFF5F5F5),
-      child: _data.isEmpty
+      child: teachingsList.isEmpty
           ? const Center(child: Text('目前無內容'))
           : ListView.builder(
-              itemCount: _data.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: _TeachingCard(item: _data[index]),
-                );
-              },
+              itemCount: teachingsList.length,
+              itemBuilder: (_, i) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: _TeachingCard(item: teachingsList[i]),
+              ),
             ),
     );
   }
 }
 
-// ── 卡片元件（含翻譯）────────────────────────────────────
+// ── 卡片元件 ─────────────────────────────────────────────
 class _TeachingCard extends StatefulWidget {
   final Teaching item;
   const _TeachingCard({required this.item});
-
   @override
   State<_TeachingCard> createState() => _TeachingCardState();
 }
 
 class _TeachingCardState extends State<_TeachingCard> {
   String? _cachedLang;
-  String _title = '';
-  String _subtitle = '';
-  String _tag = '';
-  String _subTag = '';
+  late String _title, _subtitle, _tag, _subTag;
   bool _isTranslating = false;
 
   @override
@@ -75,145 +63,96 @@ class _TeachingCardState extends State<_TeachingCard> {
     }
 
     setState(() => _isTranslating = true);
-
-    final results = await Future.wait([
+    final r = await Future.wait([
       TranslationService.translate(text: widget.item.title, to: langCode),
       TranslationService.translate(text: widget.item.subtitle, to: langCode),
       TranslationService.translate(text: widget.item.tag, to: langCode),
       TranslationService.translate(text: widget.item.subTag, to: langCode),
     ]);
-
-    if (mounted) {
-      setState(() {
-        _cachedLang = langCode;
-        _title = results[0];
-        _subtitle = results[1];
-        _tag = results[2];
-        _subTag = results[3];
-        _isTranslating = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _cachedLang = langCode;
+      _title = r[0]; _subtitle = r[1]; _tag = r[2]; _subTag = r[3];
+      _isTranslating = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     TranslationProvider.of(context);
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 10,
+            spreadRadius: 1,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TeachingDetailPage(teaching: widget.item),
-            ),
-          );
-        },
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.push(context, MaterialPageRoute(
+          builder: (_) => TeachingDetailPage(teaching: widget.item),
+        )),
         child: Padding(
           padding: const EdgeInsets.all(14),
-          child: _isTranslating
-              ? _buildSkeleton()
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _subtitle,
-                      style: const TextStyle(fontSize: 13, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        _TagChip(label: _tag),
-                        const SizedBox(width: 6),
-                        _TagChip(label: _subTag),
-                        const Spacer(),
-                        Text(
-                          widget.item.date,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+          child: _isTranslating ? _buildSkeleton() : _buildContent(),
         ),
       ),
     );
   }
 
-  Widget _buildSkeleton() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SkeletonBox(width: 120, height: 12),
-        const SizedBox(height: 8),
-        _SkeletonBox(width: double.infinity, height: 18),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            _SkeletonBox(width: 60, height: 22),
-            const SizedBox(width: 6),
-            _SkeletonBox(width: 60, height: 22),
-          ],
-        ),
-      ],
-    );
-  }
+  Widget _buildContent() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(_subtitle, style: const TextStyle(fontSize: 16, color: Color(0xFF5C4225))),
+      const SizedBox(height: 4),
+      Text(_title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+      const SizedBox(height: 10),
+      Row(children: [
+        _TagChip(_tag),
+        const SizedBox(width: 6),
+        _TagChip(_subTag),
+        const Spacer(),
+        Text(widget.item.date, style: const TextStyle(fontSize: 16, color: Color(0xFF5E4B32))),
+      ]),
+    ],
+  );
+
+  Widget _buildSkeleton() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _Skeleton(w: 120, h: 12),
+      const SizedBox(height: 8),
+      _Skeleton(w: double.infinity, h: 18),
+      const SizedBox(height: 10),
+      Row(children: [_Skeleton(w: 60, h: 22), const SizedBox(width: 6), _Skeleton(w: 60, h: 22)]),
+    ],
+  );
 }
 
-class _SkeletonBox extends StatelessWidget {
-  final double width;
-  final double height;
-  const _SkeletonBox({required this.width, required this.height});
-
+// ── 工具元件 ─────────────────────────────────────────────
+class _Skeleton extends StatelessWidget {
+  final double w, h;
+  const _Skeleton({required this.w, required this.h});
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    width: w, height: h,
+    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(4)),
+  );
 }
 
-// ── 標籤元件 ─────────────────────────────────────────────
 class _TagChip extends StatelessWidget {
   final String label;
-  const _TagChip({required this.label});
-
+  const _TagChip(this.label);
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 246, 181, 3),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Color.fromARGB(255, 180, 130, 0),
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(color: const Color(0xFFF6B503), borderRadius: BorderRadius.circular(20)),
+    child: Text(label, style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w500)),
+  );
 }
