@@ -92,8 +92,8 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
       SnackBar(
         content: const Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-            SizedBox(width: 8),
+            Icon(Icons.check_circle_outline, color: Colors.white, size: 30),
+            SizedBox(width: 10),
             Text('已複製開示全文'),
           ],
         ),
@@ -131,12 +131,6 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
                 ),
               ),
             ),
-          if (!_isTranslating)
-            IconButton(
-              icon: const Icon(Icons.copy_rounded),
-              tooltip: '複製全文',
-              onPressed: _copyAll,
-            ),
         ],
       ),
       body: _isTranslating
@@ -165,6 +159,15 @@ class _TeachingDetailPageState extends State<TeachingDetailPage> {
                       _TagChip(label: _tag),
                       const SizedBox(width: 6),
                       _TagChip(label: _subTag),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: _copyAll,
+                        child: const Icon(
+                          Icons.copy_rounded,
+                          size: 20,
+                          color: Color(0xFFD4A017),
+                        ),
+                      ),
                       const Spacer(),
                       Text(
                         widget.teaching.date,
