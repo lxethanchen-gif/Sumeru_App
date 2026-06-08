@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:suneru1/pages/data/teachings_data.dart';
-import 'package:flutter/services.dart';
+import 'package:suneru1/translation/translation_provider.dart';
+import 'package:suneru1/translation/translation_service.dart';
 
 class TeachingDetailPage extends StatefulWidget {
   final Teaching teaching;
@@ -12,193 +12,225 @@ class TeachingDetailPage extends StatefulWidget {
 }
 
 class _TeachingDetailPageState extends State<TeachingDetailPage> {
-  final AudioPlayer _player = AudioPlayer();
-  bool _isPlaying = false;
+  String? _cachedLang;
+  late String _title;
+  late String _subtitle;
+  late String _tag;
+  late String _subTag;
+  late String _content;
+  bool _isTranslating = false;
 
   @override
-  void dispose() {
-    _player.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _resetToOriginal();
   }
 
-  void _togglePlay() async {
-    if (_isPlaying) {
-      await _player.pause();
-    } else {
-      await _player.play(AssetSource('audio/${widget.teaching.audioFileName}'));
+  void _resetToOriginal() {
+    _title = widget.teaching.title;
+    _subtitle = widget.teaching.subtitle;
+    _tag = widget.teaching.tag;
+    _subTag = widget.teaching.subTag;
+    _content = widget.teaching.content;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maybeTranslate();
+  }
+
+  Future<void> _maybeTranslate() async {
+    final langCode = TranslationProvider.of(context).langCode;
+    if (_cachedLang == langCode) return;
+
+    if (langCode == 'zh-TW') {
+      setState(() {
+        _cachedLang = langCode;
+        _resetToOriginal();
+      });
+      return;
     }
-    setState(() => _isPlaying = !_isPlaying);
-  }
 
-  void _copyToClipboard() {
-    final String contentToCopy =
-        '''
-    【${widget.teaching.subtitle}】
-    標題：${widget.teaching.title}
-    類別：${widget.teaching.tag} / ${widget.teaching.subTag}
-    日期：${widget.teaching.date}
+    setState(() => _isTranslating = true);
 
-    內容：
-    ${widget.teaching.content}
-      ''';
+    final results = await Future.wait([
+      TranslationService.translate(
+          text: widget.teaching.title, to: langCode),
+      TranslationService.translate(
+          text: widget.teaching.subtitle, to: langCode),
+      TranslationService.translate(
+          text: widget.teaching.tag, to: langCode),
+      TranslationService.translate(
+          text: widget.teaching.subTag, to: langCode),
+      TranslationService.translate(
+          text: widget.teaching.content, to: langCode),
+    ]);
 
-    Clipboard.setData(ClipboardData(text: contentToCopy)).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('已複製開示內容至剪貼簿'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    });
+    if (mounted) {
+      setState(() {
+        _cachedLang = langCode;
+        _title = results[0];
+        _subtitle = results[1];
+        _tag = results[2];
+        _subTag = results[3];
+        _content = results[4];
+        _isTranslating = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen to language changes
+    TranslationProvider.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F7F2), // 溫潤紙質底色
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.black87,
-        title: const Text(
-          "開示內容",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- 1. 標題與播放器 ---
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.teaching.subtitle,
-                          style: const TextStyle(
-                            color: Color(0xFF8D6E63),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.teaching.title,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF263238),
-                            height: 1.2,
-                          ),
-                        ),
-                      ],
-                    ),
+        title: Text(_isTranslating ? '翻譯中...' : _title),
+        backgroundColor: const Color(0xFFD4A017),
+        foregroundColor: Colors.white,
+        actions: [
+          if (_isTranslating)
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
                   ),
-                  IconButton(
-                    icon: Icon(
-                      _isPlaying
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_fill,
-                      size: 50,
-                    ),
-                    color: const Color(0xFFD4A017),
-                    onPressed: _togglePlay,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 30),
-                    color: const Color(0xFFD4A017),
-                    onPressed: _copyToClipboard,
-                    tooltip: '複製全文',
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // --- 2. 標籤與日期列 ---
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  _buildTagChip(widget.teaching.tag, const Color(0xFFD4A017)),
-                  _buildTagChip(
-                    widget.teaching.subTag,
-                    const Color(0xFF8D6E63),
-                  ),
-                  _buildDateChip(widget.teaching.date),
-                ],
-              ),
-
-              const SizedBox(height: 32),
-
-              // --- 3. 裝飾線 (放在內容上方) ---
-              Container(
-                width: 360, // 線條長度
-                height: 2,
-                color: const Color(0xFFD4A017),
-              ),
-              const SizedBox(height: 20),
-
-              // --- 4. 主要內容區域 ---
-              Text(
-                widget.teaching.content,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  height: 2.0,
-                  letterSpacing: 1.0,
-                  color: Color(0xFF37474F),
                 ),
-                textAlign: TextAlign.justify,
               ),
-              const SizedBox(height: 100),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
+      body: _isTranslating
+          ? _buildLoadingBody()
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Subtitle
+                  Text(
+                    _subtitle,
+                    style: const TextStyle(
+                        fontSize: 14, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  // Title
+                  Text(
+                    _title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Tags + Date
+                  Row(
+                    children: [
+                      _TagChip(label: _tag),
+                      const SizedBox(width: 6),
+                      _TagChip(label: _subTag),
+                      const Spacer(),
+                      Text(
+                        widget.teaching.date,
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  // Content
+                  Text(
+                    _content,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.8,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 
-  // 輔助 Widget：標籤美化
-  Widget _buildTagChip(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1), // 淡底色
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          color: color,
-          fontWeight: FontWeight.bold,
-        ),
+  Widget _buildLoadingBody() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SkeletonBox(width: 140, height: 14),
+          const SizedBox(height: 10),
+          _SkeletonBox(width: double.infinity, height: 26),
+          const SizedBox(height: 14),
+          Row(children: [
+            _SkeletonBox(width: 70, height: 24),
+            const SizedBox(width: 8),
+            _SkeletonBox(width: 70, height: 24),
+          ]),
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 16),
+          for (int i = 0; i < 8; i++) ...[
+            _SkeletonBox(
+                width: i % 3 == 0
+                    ? double.infinity
+                    : (i % 3 == 1 ? 260 : 200),
+                height: 14),
+            const SizedBox(height: 10),
+          ],
+        ],
       ),
     );
   }
+}
 
-  // 輔助 Widget：日期美化
-  Widget _buildDateChip(String date) {
+class _SkeletonBox extends StatelessWidget {
+  final double width;
+  final double height;
+  const _SkeletonBox({required this.width, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      width: width,
+      height: height,
       decoration: BoxDecoration(
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(4),
       ),
+    );
+  }
+}
+
+class _TagChip extends StatelessWidget {
+  final String label;
+  const _TagChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 246, 181, 3),
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Text(
-        date,
+        label,
         style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
+          fontSize: 12,
+          color: Color.fromARGB(255, 180, 130, 0),
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

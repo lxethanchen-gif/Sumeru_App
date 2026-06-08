@@ -3,6 +3,8 @@ import 'package:suneru1/pages/first_page.dart';
 import 'package:suneru1/pages/second_page.dart';
 import 'package:suneru1/pages/third_page.dart';
 import 'package:suneru1/pages/fourth_page.dart';
+import 'package:suneru1/translation/translation_provider.dart';
+import 'package:suneru1/translation/language_fab.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,16 +15,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '須彌山佛國網',
-      debugShowCheckedModeBanner: false, // 順便幫你關閉右上角的 Debug 標籤，讓畫面更乾淨
-      theme: ThemeData(
-        useMaterial3: true, // 啟用新版 Material 3 設計語彙
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 246, 181, 3),
+    return TranslationProvider(                        // ← 新增：包住整個 App
+      notifier: TranslationNotifier(),
+      child: MaterialApp(
+        title: '須彌山佛國網',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromARGB(255, 246, 181, 3),
+          ),
         ),
+        home: const MainPage(),
       ),
-      home: const MainPage(),
     );
   }
 }
@@ -57,25 +62,27 @@ class _MainPageState extends State<MainPage> {
         centerTitle: true,
         backgroundColor: primaryGold,
         foregroundColor: Colors.white,
-        elevation: 2, // 給 AppBar 一點淡淡的陰影層次
+        elevation: 2,
         shadowColor: Colors.black26,
       ),
       body: pages[currentPage],
-      
-      // ✨ 精緻化底欄：加上 Container 與陰影裝飾
+
+      floatingActionButton: const LanguageFab(),                    // ← 新增：右下角翻譯按鈕
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),  // 頂部左圓角
-            topRight: Radius.circular(20), // 頂部右圓角
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08), // 超輕薄的陰影
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 15,
               spreadRadius: 1,
-              offset: const Offset(0, -2), // 讓陰影往上飄起，增加浮空卡片感
+              offset: const Offset(0, -2),
             ),
           ],
         ),
@@ -91,14 +98,11 @@ class _MainPageState extends State<MainPage> {
                 currentPage = value;
               });
             },
-            // 💡 視覺核心優化設定
-            type: BottomNavigationBarType.fixed, // 固定樣式，平分寬度
-            backgroundColor: Colors.white,      // 純白底色襯托金色
-            elevation: 0,                       // 關閉內建陰影（改用上方外層 Container 的精緻陰影）
-            
-            // 🏷️ 標籤文字樣式優化
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            elevation: 0,
             selectedItemColor: primaryGold,
-            unselectedItemColor: Colors.grey.shade400, // 👈 改為高質感的輕灰色，讓目前的選中項目更突出
+            unselectedItemColor: Colors.grey.shade400,
             selectedLabelStyle: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 13,
@@ -108,16 +112,13 @@ class _MainPageState extends State<MainPage> {
               fontWeight: FontWeight.normal,
               fontSize: 11,
             ),
-            
-            // 🎭 縮放與動畫細節
-            showUnselectedLabels: true, // 依然保留未選中文字，但尺寸較小，形成精緻的對比
-            iconSize: 24,              // 標準適中圖示大小
-            
+            showUnselectedLabels: true,
+            iconSize: 24,
             items: const [
               BottomNavigationBarItem(
                 icon: Padding(
                   padding: EdgeInsets.only(bottom: 4),
-                  child: Icon(Icons.menu_book_rounded), // 換成更圓潤的現代圖示
+                  child: Icon(Icons.menu_book_rounded),
                 ),
                 activeIcon: Icon(Icons.menu_book_rounded),
                 label: '文字開示',
@@ -141,7 +142,7 @@ class _MainPageState extends State<MainPage> {
               BottomNavigationBarItem(
                 icon: Padding(
                   padding: EdgeInsets.only(bottom: 4),
-                  child: Icon(Icons.videocam_rounded), // 修正為錄影機圖示，更符合直播
+                  child: Icon(Icons.videocam_rounded),
                 ),
                 activeIcon: Icon(Icons.videocam_rounded),
                 label: '直播',
